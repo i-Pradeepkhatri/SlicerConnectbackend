@@ -11,16 +11,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Get __dirname in ES module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Serve static files from frontend/
-app.use(express.static(path.join(__dirname, "frontend")));
+app.use(express.static(path.join(__dirname, "src")));
 
-// Send index.html for root
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "frontend", "index.html"));
+    res.sendFile(path.join(__dirname, "src", "index.html"));
 });
 
 const PORT = process.env.PORT || 5000;
