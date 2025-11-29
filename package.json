@@ -8,7 +8,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "\"# Slicerbackend\"",
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
@@ -16,5 +16,13 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pka420/SlicerConnectbackend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pka420/SlicerConnectbackend/issues"
+  },
+  "homepage": "https://github.com/pka420/SlicerConnectbackend#readme"
 }

@@ -152,7 +152,6 @@ You can test registration and login APIs directly from there.
 * ✅ JWT-based session handling in frontend
 * ✅ Email verification
 * ✅ Dark/light theme toggle
-* ✅ Database migration to PostgreSQL/MySQL
 
 ---
 
