@@ -21,6 +21,11 @@ registerTab.addEventListener("click", () => {
   message.textContent = "";
 });
 
+const url = window.location.hostname === "localhost"
+  ? "http://127.0.0.1:8000"
+  : "https://slicerconnect.from-delhi.net";
+
+
 // Handle Login
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -28,7 +33,7 @@ loginForm.addEventListener("submit", async (e) => {
   const password = document.getElementById("login-password").value;
 
   try {
-    const res = await fetch("http://127.0.0.1:8000/auth/login", {
+    const res = await fetch(`${url}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -65,7 +70,7 @@ registerForm.addEventListener("submit", async (e) => {
   const password = document.getElementById("register-password").value;
 
   try {
-    const res = await fetch("http://127.0.0.1:8000/auth/register", {
+    const res = await fetch(`${url}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, email, password }),
@@ -106,7 +111,7 @@ async function resendVerification() {
   }
 
   try {
-    const res = await fetch("http://127.0.0.1:8000/auth/resend-verification", {
+    const res = await fetch(`${url}/auth/resend-verification`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email }),
