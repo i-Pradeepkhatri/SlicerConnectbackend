@@ -16,5 +16,5 @@ def send_verification_email(email, token):
     msg["From"] = EMAIL_USER
     msg["To"] = email
 
-    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-        server.sendmail(EMAIL_USER, email, msg.as_string())
+    with smtplib.SMTP("mailserver", 25) as server:
+        server.sendmail("noreply@slicerconnect.from-delhi.net", "pka420@proton.me", msg.as_string())

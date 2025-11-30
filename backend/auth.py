@@ -49,21 +49,10 @@ def register(request: RegisterRequest, db: Session = Depends(get_db)):
     token = generate_email_token()
     new_user = User(username=request.username, email=request.email, password=hashed_pw,
                     email_token=token, is_verified=False)
+    send_verification_email(new_user.email, token)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    token = generate_email_token()
-
-    user = User(
-        username=username,
-        email=email,
-        password=hashed_password,
-        email_token=token,
-        is_verified=False
-    )
-    db.add(user)
-    db.commit()
-    send_verification_email(user.email, token)
     return {"message": f"User '{request.username}' registered successfully!"}
 
 @router.post("/login")

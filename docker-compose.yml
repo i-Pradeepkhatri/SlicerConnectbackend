@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   db:
     image: postgres:17
@@ -16,9 +14,7 @@ services:
   mailserver:
     image: docker.io/mailserver/docker-mailserver:latest
     container_name: mailserver
-    hostname: mail
-    domainname: slicer.local
-    env_file: .env
+    env_file: mailserver.env
     ports:
       - "25:25"
       - "587:587"
@@ -28,11 +24,14 @@ services:
       - ./mailstate:/var/mail-state
       - ./maillogs:/var/log/mail
       - ./config-mail:/tmp/docker-mailserver
+      - /etc/letsencrypt:/etc/letsencrypt
     cap_add:
       - NET_ADMIN
       - SYS_PTRACE
     restart: always
-
+    networks:          # ← ADD THIS
+      - slicer_net     # ← ADD THIS
+      
   backend:
     build:
       context: .
@@ -41,13 +40,13 @@ services:
     env_file:
       - .env
     ports:
-      - "${BACKEND_PORT}:8000"
+      - "8000:8000"
     depends_on:
       - db
       - mailserver
     networks:
       - slicer_net
-
+      
   frontend:
     build:
       context: .
@@ -56,16 +55,15 @@ services:
     env_file:
       - .env
     ports:
-      - "${FRONTEND_PORT}:3000"
+      - "3000:3000"
     depends_on:
       - backend
     networks:
       - slicer_net
-
+      
 volumes:
   postgres_data:
-
+  
 networks:
   slicer_net:
     driver: bridge
-
