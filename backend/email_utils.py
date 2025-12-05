@@ -15,6 +15,8 @@ def send_verification_email(email, token):
     msg["Subject"] = "Verify your email"
     msg["From"] = EMAIL_USER
     msg["To"] = email
+    print(msg)
+    return
 
-    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-        server.sendmail(EMAIL_USER, email, msg.as_string())
+    # with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+    #     server.sendmail(EMAIL_USER, email, msg.as_string())

@@ -78,4 +78,4 @@ def verify_email(token: str, db: Session = Depends(get_db)):
     user.email_token = None
     db.commit()
 
-    return {"message": "Email verified successfully"}
+    return {"success": True, "message": "Email verified successfully"}
