@@ -5,9 +5,11 @@ from jose import jwt
 from passlib.context import CryptContext
 from database import get_db
 from models import User
-from email_utils import send_verification_email
+from email_utils import send_email
 import hashlib
 import secrets
+from datetime import datetime, timedelta
+
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -49,7 +51,12 @@ def register(request: RegisterRequest, db: Session = Depends(get_db)):
     token = generate_email_token()
     new_user = User(username=request.username, email=request.email, password=hashed_pw,
                     email_token=token, is_verified=False)
-    send_verification_email(new_user.email, token)
+    send_email(
+    email=new_user.email,
+    token=token,
+    purpose="verify"
+)
+
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -79,3 +86,48 @@ def verify_email(token: str, db: Session = Depends(get_db)):
     db.commit()
 
     return {"success": True, "message": "Email verified successfully"}
+
+@router.post("/forgot-password")
+def forgot_password(email: str, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == email).first()
+
+    # Always return success (prevents email enumeration)
+    if not user:
+        return {"message": "If the email exists, a reset link has been sent"}
+
+    reset_token = secrets.token_urlsafe(32)
+    expiry = datetime.utcnow() + timedelta(minutes=15)
+
+    user.reset_token = reset_token
+    user.reset_token_expiry = expiry
+    db.commit()
+
+    send_email(
+        email=user.email,
+        token=reset_token,
+        purpose="reset"
+    )
+
+    return {"message": "If the email exists, a reset link has been sent"}
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+
+@router.post("/reset-password")
+def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.reset_token == request.token).first()
+
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+
+    if user.reset_token_expiry < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="Reset token has expired")
+
+    user.password = hash_password(request.new_password)
+    user.reset_token = None
+    user.reset_token_expiry = None
+    db.commit()
+
+    return {"message": "Password reset successful"}

@@ -1,21 +1,54 @@
+import os
 import smtplib
 from email.mime.text import MIMEText
-import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+EMAIL_ENABLED = os.getenv("EMAIL_ENABLED", "False").lower() == "true"
 
 SMTP_SERVER = os.getenv("MAIL_SERVER")
 SMTP_PORT = int(os.getenv("MAIL_PORT", 587))
 EMAIL_USER = os.getenv("MAIL_USER")
 EMAIL_PASS = os.getenv("MAIL_PASS")
-FRONTEND_URL = os.getenv("FRONTEND_URL")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
-def send_verification_email(email, token):
-    link = f"{FRONTEND_URL}/verify?token={token}"
 
-    msg = MIMEText(f"Click to verify: {link}")
-    msg["Subject"] = "Verify your email"
+def send_email(email: str, token: str, purpose: str = "verify"):
+    """
+    purpose:
+    - 'verify' -> email verification
+    - 'reset'  -> forgot password
+    """
+
+    # 🚫 DEV MODE: do nothing, never crash auth
+    if not EMAIL_ENABLED:
+        print("📧 Email disabled (dev mode)")
+        print("Purpose:", purpose)
+        print("Token:", token)
+        return
+
+    if purpose == "reset":
+        link = f"{FRONTEND_URL}/reset-password?token={token}"
+        subject = "Reset your password"
+        body = f"Click the link below to reset your password:\n\n{link}"
+    else:
+        link = f"{FRONTEND_URL}/verify?token={token}"
+        subject = "Verify your email"
+        body = f"Click the link below to verify your email:\n\n{link}"
+
+    msg = MIMEText(body)
+    msg["Subject"] = subject
     msg["From"] = EMAIL_USER
     msg["To"] = email
-    print(msg)
 
-    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-        server.sendmail(EMAIL_USER, email, msg.as_string())
+    try:
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+            server.login(EMAIL_USER, EMAIL_PASS)
+            server.sendmail(EMAIL_USER, email, msg.as_string())
+    except Exception as e:
+        print("❌ Email sending failed:", e)
